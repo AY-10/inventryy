@@ -1,34 +1,18 @@
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
-from rest_framework import response
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import UserRegistrationSerializer, ProductSerializer
 from .models import Product
 
-# Serializer for user registration
+User = get_user_model()
+
+# View for the landing page
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'password', 'email']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        user = User(**validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-# Serializer for Product
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id', 'name', 'barcode',
-                  'image', 'category', 'store', 'stock']
+def landing_page(request):
+    return render(request, 'index.html')  # Render the landing page template
 
 # View for user registration
 
@@ -56,11 +40,3 @@ class UserLoginView(generics.GenericAPIView):
                 'access': str(refresh.access_token),
             })
         return response.Response({'error': 'Invalid credentials'}, status=400)
-
-# View for listing products
-
-
-class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
