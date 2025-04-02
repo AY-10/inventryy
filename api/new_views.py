@@ -5,6 +5,7 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework import response
 from .models import Product
+from .serializers import ProductSerializer
 
 # Serializer for user registration
 
@@ -20,15 +21,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
-# Serializer for Product
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id', 'name', 'barcode',
-                  'image', 'category', 'store', 'stock']
 
 # View for user registration
 
@@ -63,4 +55,4 @@ class UserLoginView(generics.GenericAPIView):
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]

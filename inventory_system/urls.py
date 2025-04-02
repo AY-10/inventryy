@@ -16,11 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
 from api.views import UserRegistrationView, UserLoginView
+from django.views.generic import TemplateView
+from api.views import ProductListView
 
 urlpatterns = [
+    path('', TemplateView.as_view(template_name='index.html'),
+         name='home'),  # Default route
     path('api/register/', UserRegistrationView.as_view(), name='user-register'),
     path('api/login/', UserLoginView.as_view(), name='user-login'),
     path('admin/', admin.site.urls),
+    # path('new-functionality/', NewFunctionalityView.as_view(),
+    #      name='new-functionality'),
 ]
