@@ -1,56 +1,72 @@
 # Inventory Management System
 
-## Overview
+## Description
 
-This project is an Inventory Management System built with Django. It allows users to manage products, stores, and orders efficiently.
+This project is an Inventory Management System built with Django REST Framework. It allows users to manage products, stores, and orders efficiently. The system supports role-based access control (RBAC) with Super Admin and Admin roles.
 
-## Features
-
-- User registration and authentication
-- Role-based access control
-- Product management
-- Store management
-- Order processing
-
-## Setup Instructions
+## Installation
 
 1. Clone the repository:
-
-   ```
+   ```bash
    git clone <repository-url>
+   cd inventry
    ```
-
-2. Navigate to the project directory:
-
+2. Create a virtual environment:
+   ```bash
+   python -m venv venv
    ```
-   cd backend
-   ```
-
-3. Install the required packages:
-
-   ```
+3. Activate the virtual environment:
+   - On Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+4. Install the required packages:
+   ```bash
    pip install -r requirements.txt
    ```
 
-4. Set up the database:
+## Usage
 
-   - Ensure PostgreSQL is running.
-   - Update the database connection parameters in `create_db.py` or set environment variables.
-
-5. Run the migrations:
-
-   ```
+1. Run the migrations:
+   ```bash
    python manage.py migrate
    ```
-
-6. Start the development server:
-   ```
+2. Start the development server:
+   ```bash
    python manage.py runserver
    ```
+3. Access the API at `http://127.0.0.1:8000/`.
+
+## API Endpoints
+
+- **User Registration**: `POST /api/register/`
+  - Request Body:
+    ```json
+    {
+      "username": "string",
+      "password": "string",
+      "email": "string"
+    }
+    ```
+- **User Login**: `POST /api/login/`
+  - Request Body:
+    ```json
+    {
+      "username": "string",
+      "password": "string"
+    }
+    ```
+- **User Management**: `GET /api/users/` (only accessible by Super Admin)
+- **Product Management**: `GET /api/products/` (accessible by Admin)
+- **Store Management**: `GET /api/stores/` (accessible by Admin)
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or features.
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 
