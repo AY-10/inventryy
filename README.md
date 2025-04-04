@@ -17,7 +17,7 @@ This project is an Inventory Management System built with Django. It allows user
 1. Clone the repository:
 
    ```
-   git clone <repository-url>
+   git clone https://github.com/AY-10/inventryy
    ```
 
 2. Navigate to the project directory:
