@@ -154,4 +154,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
    - Name: `Inventory Management API`
    - Identifier: `https://your-api-identifier`
    - Signing Algorithm: `RS256`
-5. Update the `.env` files with your Auth0 credentials:
+5. Update the `.env` files with your Auth0 credentials
