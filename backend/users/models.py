@@ -14,6 +14,8 @@ class User(AbstractUser):
         default=Role.ADMIN,
     )
     email = models.EmailField(unique=True)
+    auth0_id = models.CharField(
+        max_length=255, null=True, blank=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

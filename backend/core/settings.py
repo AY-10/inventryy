@@ -224,3 +224,12 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+# Auth0 Settings
+AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN', 'your-auth0-domain.auth0.com')
+AUTH0_CLIENT_ID = os.getenv('AUTH0_CLIENT_ID', 'your-auth0-client-id')
+AUTH0_CLIENT_SECRET = os.getenv(
+    'AUTH0_CLIENT_SECRET', 'your-auth0-client-secret')
+AUTH0_CALLBACK_URL = os.getenv(
+    'AUTH0_CALLBACK_URL', 'http://localhost:3000/callback')
+AUTH0_AUDIENCE = os.getenv('AUTH0_AUDIENCE', 'https://your-api-identifier')

@@ -1,128 +1,116 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, AuthState, LoginCredentials, RegisterData } from "../types/auth";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { authAPI } from "../services/api";
+import { AuthContextType, AuthState, User, RegisterData } from "../types/auth";
 
-interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
-  logout: () => Promise<void>;
-  updateProfile: (data: Partial<User>) => Promise<void>;
-}
+const initialState: AuthState = {
+  user: null,
+  token: localStorage.getItem("token"),
+  isAuthenticated: false,
+  loading: true,
+  error: null,
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    token: localStorage.getItem("token"),
-    refreshToken: localStorage.getItem("refreshToken"),
-    isAuthenticated: false,
-    loading: true,
-    error: null,
-  });
+  const [state, setState] = useState<AuthState>(initialState);
 
   useEffect(() => {
-    const loadUser = async () => {
-      if (state.token) {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
         try {
           const user = await authAPI.getCurrentUser();
-          setState((prev) => ({
-            ...prev,
+          setState({
             user,
+            token,
             isAuthenticated: true,
             loading: false,
-          }));
+            error: null,
+          });
         } catch (error) {
-          setState((prev) => ({
-            ...prev,
-            user: null,
-            token: null,
-            refreshToken: null,
-            isAuthenticated: false,
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          setState({
+            ...initialState,
             loading: false,
-          }));
+          });
         }
       } else {
-        setState((prev) => ({ ...prev, loading: false }));
+        setState({
+          ...initialState,
+          loading: false,
+        });
       }
     };
 
-    loadUser();
-  }, [state.token]);
+    initializeAuth();
+  }, []);
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (username: string, password: string): Promise<User> => {
     try {
-      const { access, refresh } = await authAPI.login(credentials);
+      const { access, refresh } = await authAPI.login(username, password);
       localStorage.setItem("token", access);
       localStorage.setItem("refreshToken", refresh);
       const user = await authAPI.getCurrentUser();
-      setState((prev) => ({
-        ...prev,
+      setState({
         user,
         token: access,
-        refreshToken: refresh,
         isAuthenticated: true,
+        loading: false,
         error: null,
-      }));
+      });
+      return user;
     } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || "Login failed";
       setState((prev) => ({
         ...prev,
-        error: error.response?.data?.detail || "Login failed",
+        error: errorMessage,
       }));
-      throw error;
+      throw new Error(errorMessage);
     }
   };
 
-  const register = async (data: RegisterData) => {
+  const register = async (data: RegisterData): Promise<void> => {
     try {
       await authAPI.register(data);
-      await login({ username: data.username, password: data.password });
-    } catch (error: any) {
       setState((prev) => ({
         ...prev,
-        error: error.response?.data?.detail || "Registration failed",
+        error: null,
       }));
-      throw error;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.detail || "Registration failed";
+      setState((prev) => ({
+        ...prev,
+        error: errorMessage,
+      }));
+      throw new Error(errorMessage);
     }
   };
 
   const logout = async () => {
     try {
       await authAPI.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       setState({
-        user: null,
-        token: null,
-        refreshToken: null,
-        isAuthenticated: false,
+        ...initialState,
         loading: false,
-        error: null,
       });
-    } catch (error: any) {
-      setState((prev) => ({
-        ...prev,
-        error: error.response?.data?.detail || "Logout failed",
-      }));
     }
   };
 
-  const updateProfile = async (data: Partial<User>) => {
-    try {
-      if (!state.user?.id) throw new Error("User not found");
-      const updatedUser = await authAPI.updateUser(state.user.id, data);
-      setState((prev) => ({
-        ...prev,
-        user: updatedUser,
-        error: null,
-      }));
-    } catch (error: any) {
-      setState((prev) => ({
-        ...prev,
-        error: error.response?.data?.detail || "Profile update failed",
-      }));
-      throw error;
-    }
+  const clearError = () => {
+    setState((prev) => ({
+      ...prev,
+      error: null,
+    }));
   };
 
   return (
@@ -132,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         register,
         logout,
-        updateProfile,
+        clearError,
       }}
     >
       {children}
@@ -147,3 +135,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

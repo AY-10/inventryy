@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Container,
   Box,
@@ -9,48 +9,39 @@ import {
   Link,
   Paper,
   Alert,
-  Divider,
 } from "@mui/material";
-import {
-  Google as GoogleIcon,
-  Facebook as FacebookIcon,
-} from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 
-const Login: React.FC = () => {
+const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
-  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const from = location.state?.from?.pathname || "/dashboard";
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      setError(null);
-      setLoading(true);
-      await login({
-        username: formData.get("username") as string,
-        password: formData.get("password") as string,
-      });
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to login");
+      await login(formData.username, formData.password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Invalid username or password");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/accounts/google/login/";
-  };
-
-  const handleFacebookLogin = () => {
-    window.location.href = "http://localhost:8000/accounts/facebook/login/";
   };
 
   return (
@@ -63,36 +54,25 @@ const Login: React.FC = () => {
           alignItems: "center",
         }}
       >
-        <Paper elevation={3} sx={{ p: 4, width: "100%" }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
             Sign In
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ width: "100%", mb: 2 }}>
               {error}
             </Alert>
           )}
-          <Box sx={{ mb: 3 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<GoogleIcon />}
-              onClick={handleGoogleLogin}
-              sx={{ mb: 1 }}
-            >
-              Continue with Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<FacebookIcon />}
-              onClick={handleFacebookLogin}
-            >
-              Continue with Facebook
-            </Button>
-          </Box>
-          <Divider sx={{ my: 2 }}>OR</Divider>
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
             <TextField
               margin="normal"
               required
@@ -102,6 +82,8 @@ const Login: React.FC = () => {
               name="username"
               autoComplete="username"
               autoFocus
+              value={formData.username}
+              onChange={handleChange}
             />
             <TextField
               margin="normal"
@@ -112,6 +94,8 @@ const Login: React.FC = () => {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
             />
             <Button
               type="submit"
@@ -124,7 +108,7 @@ const Login: React.FC = () => {
             </Button>
             <Box sx={{ textAlign: "center" }}>
               <Link component={RouterLink} to="/register" variant="body2">
-                {"Don't have an account? Sign Up"}
+                Don't have an account? Sign Up
               </Link>
             </Box>
           </Box>
